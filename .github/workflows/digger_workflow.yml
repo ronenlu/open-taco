@@ -48,11 +48,14 @@ jobs:
       # Install Atlas CLI for database migrations
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
+        with:
+          cloud-token: ${{ secrets.ATLAS_CLOUD_TOKEN }}
 
       # Run OpenTaco
       - name: Run OpenTaco
         uses: diggerhq/digger@vLatest
         with:
+          digger-spec: ${{ github.event.inputs.spec }}
           setup-aws: false           # Set to true if using AWS
           setup-terraform: true
           terraform-version: 1.6.0
