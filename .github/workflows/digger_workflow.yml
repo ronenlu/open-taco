@@ -8,10 +8,7 @@ on:
       run_name:
         required: false
 
-# Limit concurrent runs to prevent state conflicts
-concurrency:
-  group: digger-${{ github.head_ref || github.ref }}
-  cancel-in-progress: false
+run-name: '${{inputs.run_name}}'
 
 jobs:
   digger:
@@ -67,6 +64,5 @@ jobs:
 
           # Pass database URL as Terraform variable
           TF_VAR_database_url: "postgres://postgres:postgres@localhost:5432/app?sslmode=disable"
-
-          # Optional: Pass additional Terraform variables
-          # TF_VAR_environment: "production"
+          # Pass Atlas Cloud token as Terraform variable
+          TF_VAR_atlas_token: ${{ secrets.ATLAS_CLOUD_TOKEN }}

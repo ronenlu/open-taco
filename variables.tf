@@ -3,3 +3,9 @@ variable "database_url" {
   type        = string
   sensitive   = true  # Marks this as sensitive to hide in logs
 }
+
+variable "atlas_token" {
+  description = "Atlas token for authentication"
+  type        = string
+  sensitive   = true
+}
