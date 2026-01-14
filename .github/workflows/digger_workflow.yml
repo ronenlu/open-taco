@@ -1,4 +1,4 @@
-name: OpenTaco Database Migrations
+name: OpenTaco Database Schema Management
 
 on:
   workflow_dispatch:
@@ -47,6 +47,14 @@ jobs:
         uses: ariga/setup-atlas@v0
         with:
           cloud-token: ${{ secrets.ATLAS_CLOUD_TOKEN }}
+
+      # Push schema to Atlas Cloud Registry
+      - name: Push Schema
+        uses: ariga/atlas-action/schema/push@v1
+        with:
+          url: 'file://schema.sql'
+          schema-name: 'open-taco'
+          dev-url: 'docker://postgres/16/dev?search_path=public'
 
       # Run OpenTaco
       - name: Run OpenTaco

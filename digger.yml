@@ -1,9 +1,9 @@
 # Define your Terraform projects
 projects:
-  - name: database-migrations      # Unique name for this project
-    dir: .                         # Directory containing Terraform files
-    workflow: default              # Which workflow to use
-    terragrunt: false              # Set to true if using Terragrunt
+  - name: database-schema           # Unique name for this project
+    dir: .                          # Directory containing Terraform files
+    workflow: default               # Which workflow to use
+    terragrunt: false               # Set to true if using Terragrunt
     # Uncomment to auto-apply when PR is merged:
     # apply_on_merge: true
 
@@ -13,13 +13,13 @@ workflows:
     # Steps to run on pull request (plan)
     plan:
       steps:
-        - init                     # terraform init
-        - plan                     # terraform plan
+        - init                      # terraform init
+        - plan                      # terraform plan
     # Steps to run on apply
     apply:
       steps:
-        - init                     # terraform init
-        - apply                    # terraform apply
+        - init                      # terraform init
+        - apply                     # terraform apply
     # Optional: Configure plan behavior
     configuration:
       on_pull_request_pushed: ["digger plan"]
