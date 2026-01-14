@@ -1,7 +1,16 @@
 -- Create users table
 CREATE TABLE users (
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL
+);
+
+-- Add a new table
+CREATE TABLE posts (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id),
+  title VARCHAR(255) NOT NULL,
+  content TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

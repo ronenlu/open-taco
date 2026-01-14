@@ -48,6 +48,14 @@ jobs:
         with:
           cloud-token: ${{ secrets.ATLAS_CLOUD_TOKEN }}
 
+      # Push migrations to Atlas Cloud Registry
+      - name: Push Migrations
+        uses: ariga/atlas-action/migrate/push@v1
+        with:
+          dir: 'file://migrations'
+          dir-name: 'open-taco'
+          dev-url: 'docker://postgres/16/dev?search_path=public'
+
       # Run OpenTaco
       - name: Run OpenTaco
         uses: diggerhq/digger@vLatest
