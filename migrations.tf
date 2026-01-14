@@ -2,7 +2,7 @@
 # This inspects both the migrations directory and the target database
 data "atlas_migration" "app" {
   # Path to the directory containing migration files
-  dir = "file://migrations"
+  dir = "atlas://open-taco"
   # Connection URL to the target database
   url = var.database_url
 }

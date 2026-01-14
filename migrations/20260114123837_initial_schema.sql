@@ -1,3 +1,12 @@
+-- Create "users" table
+CREATE TABLE "users" (
+  "created_at" timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  "id" serial NOT NULL,
+  "email" character varying(255) NOT NULL,
+  "name" character varying(255) NOT NULL,
+  PRIMARY KEY ("id"),
+  CONSTRAINT "users_email_key" UNIQUE ("email")
+);
 -- Create "posts" table
 CREATE TABLE "posts" (
   "id" serial NOT NULL,
