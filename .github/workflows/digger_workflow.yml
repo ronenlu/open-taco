@@ -1,22 +1,12 @@
 name: OpenTaco Database Migrations
 
 on:
-  # Run on pull request events
-  pull_request:
-    branches: [main, master]
-    types: [opened, synchronize, reopened, closed]
-
-  # Enable CommentOps (digger plan, digger apply comments)
-  issue_comment:
-    types: [created]
-
-  # Allow manual triggering
   workflow_dispatch:
     inputs:
-      job:
-        description: 'Job to run (digger plan or digger apply)'
+      spec:
         required: true
-        default: 'digger plan'
+      run_name:
+        required: false
 
 # Limit concurrent runs to prevent state conflicts
 concurrency:
@@ -55,22 +45,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Install Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.6.0
-          terraform_wrapper: false  # Required for OpenTaco
-
       # Install Atlas CLI for database migrations
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
 
       # Run OpenTaco
       - name: Run OpenTaco
-        uses: diggerhq/digger@v0.6.0
+        uses: diggerhq/digger@vLatest
         with:
           setup-aws: false           # Set to true if using AWS
+          setup-terraform: true
+          terraform-version: 1.6.0
           disable-locking: false     # Enable PR-level locking
         env:
           # GitHub token for PR comments and API access
