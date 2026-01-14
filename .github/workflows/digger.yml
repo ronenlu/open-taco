@@ -1,0 +1,84 @@
+name: OpenTaco Database Migrations
+
+on:
+  # Run on pull request events
+  pull_request:
+    branches: [main, master]
+    types: [opened, synchronize, reopened, closed]
+
+  # Enable CommentOps (digger plan, digger apply comments)
+  issue_comment:
+    types: [created]
+
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job to run (digger plan or digger apply)'
+        required: true
+        default: 'digger plan'
+
+# Limit concurrent runs to prevent state conflicts
+concurrency:
+  group: digger-${{ github.head_ref || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  digger:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    # Required permissions for OpenTaco
+    permissions:
+      contents: write        # To checkout code
+      pull-requests: write   # To post PR comments
+      issues: write          # For issue comments (CommentOps)
+      id-token: write        # For OIDC authentication (if using)
+      statuses: write        # To update commit statuses
+
+    steps:
+      # Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Install Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+          terraform_wrapper: false  # Required for OpenTaco
+
+      # Install Atlas CLI for database migrations
+      - name: Setup Atlas
+        uses: ariga/setup-atlas@v0
+
+      # Run OpenTaco
+      - name: Run OpenTaco
+        uses: diggerhq/digger@v0.6.0
+        with:
+          setup-aws: false           # Set to true if using AWS
+          disable-locking: false     # Enable PR-level locking
+        env:
+          # GitHub token for PR comments and API access
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
+          # Pass database URL as Terraform variable
+          TF_VAR_database_url: "postgres://postgres:postgres@localhost:5432/app?sslmode=disable"
+
+          # Optional: Pass additional Terraform variables
+          # TF_VAR_environment: "production"
