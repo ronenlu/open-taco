@@ -1,0 +1,57 @@
+name: Rebase and Sync Migrations
+on:
+  push:
+    branches-ignore:
+      - main
+jobs:
+  rebase-and-sync:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_DATABASE: dev
+          MYSQL_ROOT_PASSWORD: pass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -ppass"
+          --health-interval 10s
+          --health-start-period 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: ariga/setup-atlas@v0
+        with:
+          cloud-token: ${{ secrets.ATLAS_TOKEN }}
+      - uses: ariga/atlas-action/setup@459ad1d7068ff3e37ca91304d716c74c4ba5da97
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+          fetch-depth: 0
+      - name: Configure git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      - name: Rebase migrations
+        id: rebase
+        uses: ariga/atlas-action/migrate/autorebase@459ad1d7068ff3e37ca91304d716c74c4ba5da97
+        with:
+          base-branch: main
+          dir: file://migrations
+      - name: Apply migrations with non-linear execution
+        if: steps.rebase.outputs.rebased == 'true'
+        uses: ariga/atlas-action/migrate/apply@459ad1d7068ff3e37ca91304d716c74c4ba5da97
+        with:
+          url: 'mysql://root:pass@localhost:3306/dev'
+          dir: 'file://migrations'
+          exec-order: non-linear
+      - name: Set migration version
+        if: steps.rebase.outputs.rebased == 'true'
+        uses: ariga/atlas-action/migrate/set@459ad1d7068ff3e37ca91304d716c74c4ba5da97
+        with:
+          url: 'mysql://root:pass@localhost:3306/dev'
+          dir: 'file://migrations'
+          version: ${{ steps.rebase.outputs.latest_version }}
